@@ -54,7 +54,7 @@ class UNet(nn.Module):
         self.up_42 = nn.Conv2d(64, 64, kernel_size=3, padding=1)
 
         # Final output layer
-        self.output_layer = nn.Conv2d(64, 2, kernel_size=1)
+        self.output_layer = nn.Conv2d(64, 1, kernel_size=1)
 
     def forward(self, x):
         # Encoding Layers
@@ -62,65 +62,51 @@ class UNet(nn.Module):
         d_11 = F.relu(self.down_11(x))
         d_12 = F.relu(self.down_12(d_11))
         d_1 = self.max_pool1(d_12)
-        print("Down Layer 1: ", d_1.shape)
 
         # Down Layer 2
         d_21 = F.relu(self.down_21(d_1))
         d_22 = F.relu(self.down_22(d_21))
         d_2 = self.max_pool2(d_22)
-        print("Down Layer 2: ", d_2.shape)
 
         # Down Layer 3
         d_31 = F.relu(self.down_31(d_2))
         d_32 = F.relu(self.down_32(d_31))
         d_3 = self.max_pool3(d_32)
-        print("Down Layer 3: ", d_3.shape)
 
         # Down Layer 4
         d_41 = F.relu(self.down_41(d_3))
         d_42 = F.relu(self.down_42(d_41))
         d_4 = self.max_pool4(d_42)
-        print("Down Layer 3: ", d_4.shape)
 
         # Down Layer 5 - Final Handoff Layer
         d_51 = F.relu(self.down_51(d_4))
         d_52 = F.relu(self.down_52(d_51))
-        print("Down Layer 5: ", d_52.shape)
-        print("\n\n")
 
         # Encoding Layers
         # Up Layer 1
         u_1t = self.up_1t(d_52)
-        print("Up ConvT Layer 1: ", u_1t.shape)
         u_1t_42 = torch.cat([u_1t, d_42], dim=1)
         u_11 = F.relu(self.up_11(u_1t_42))
         u_12 = F.relu(self.up_12(u_11))
-        print("Up Layer 1: ", u_12.shape)
 
         # Up Layer 2
         u_2t = self.up_2t(u_12)
 
-        print("Up ConvT Layer 2: ", u_2t.shape)
         u_2t_32 = torch.cat([u_2t, d_32], dim=1)
         u_21 = F.relu(self.up_21(u_2t_32))
         u_22 = F.relu(self.up_22(u_21))
-        print("Up Layer 2: ", u_22.shape)
 
         # Up Layer 3
         u_3t = self.up_3t(u_22)
-        print("Up ConvT Layer 3: ", u_3t.shape)
         u_3t_22 = torch.cat([u_3t, d_22], dim=1)
         u_31 = F.relu(self.up_31(u_3t_22))
         u_32 = F.relu(self.up_32(u_31))
-        print("Up Layer 3: ", u_32.shape)
 
         # Up Layer 4
         u_4t = self.up_4t(u_32)
-        print("Up ConvT Layer 4: ", u_4t.shape)
         u_4t_12 = torch.cat([u_4t, d_12], dim=1)
         u_41 = F.relu(self.up_41(u_4t_12))
         u_42 = F.relu(self.up_42(u_41))
-        print("Up Layer 4: ", u_42.shape)
 
         # Final Output Layer
         output = self.output_layer(u_42)
